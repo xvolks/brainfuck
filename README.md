@@ -1,21 +1,22 @@
 # Brainfuck Interpreter
 
-A simple Brainfuck interpreter written in Rust.
+A simple Brainfuck interpreter and compiler written in Rust.
 
 ## Usage
 
 ```bash
-# Run with a Brainfuck program as argument
-cargo run -- "<program>"
+# Run with a Brainfuck program file as argument
+cargo run -- [--no-jit] "<program.bf>"
 
 # Or Hello, World mode
-cargo run
+cargo run --release
 ```
 
 ## Commands
 
-- `cargo run -- "<bf program>"` - executes the Brainfuck program
-- Programs can be passed as a single argument or multiple arguments
+- `cargo run -- "<bf program file>"` - executes the Brainfuck program in this file
+- Program files can be passed as a single argument or multiple arguments
+- The option `--no-jit` disables the native code compilation and run in interpreted mode
 
 ## Features
 
