@@ -1,4 +1,5 @@
-use std::env::args;
+
+use std::{env::args, fs, path::PathBuf};
 
 #[derive(Clone, Debug, PartialEq)]
 enum Op {
@@ -269,7 +270,8 @@ fn main() {
         );
     } else {
         for arg in args().skip(1) {
-            exec_source(arg.as_str());
+            let source = fs::read_to_string(PathBuf::from(&arg)).expect("Cannot read file {arg}");
+            exec_source(source.as_str(), jit);
         }
     }
 }
