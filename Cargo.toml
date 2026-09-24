@@ -9,5 +9,5 @@ libc = "0.2.189"
 errno = "0.3.14"
 
 [features]
-default = []
+default = ["compress"]
 compress = []
