@@ -2,12 +2,19 @@
 
 run-samples() {
   cargo build 2> /dev/null && cargo build --release 2> /dev/null
+  has_compress=$(grep -E 'default = \[(.+)\]' Cargo.toml)
   echo
   echo
-  echo "+-------------------------------------------------------------------------+"
+  if [[ -z $has_compress ]]; then
+      echo "+-----------------------  COMPRESS   -------------------------------------+"
+  else
+      echo "+---------------------- NO  COMPRESS -------------------------------------+"
+  fi
   for f in samples/*.bf; do
-    echo "---------------  $f  -------------"
+    echo "---------------  $f (interpreted) -------------"
     echo "test" | ./target/release/bf --no-jit $f
+    echo "---------------  $f (jit) -------------"
+    echo "test" | ./target/release/bf  $f
     echo "------------------------------------------------"
   done
 }
