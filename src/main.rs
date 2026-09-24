@@ -1,3 +1,5 @@
+mod jit;
+
 use std::{env::args, fs, path::PathBuf};
 
 const COMPRESS: bool = cfg!(feature = "compress");
@@ -183,19 +185,26 @@ struct Cpu {
     ops: Vec<Op>,
     ip: usize,
     head: usize,
+    jit: bool,
 }
 
 impl Cpu {
-    pub fn new(ops: Vec<Op>) -> Self {
+    pub fn new(ops: Vec<Op>, jit: bool) -> Self {
         Self {
             memory: vec![0; MAX_MEM],
             ops,
             ip: 0,
             head: 0,
+            jit,
         }
     }
 
     pub fn execute(&mut self) {
+        if self.jit {
+            return self.execute_jit().map_err(|err| {
+                println!("Error: {err}")
+            }).expect("Failed");
+        }
         let getch = getch::Getch::new();
         loop {
             #[cfg(debug_assertions)]
@@ -350,7 +359,11 @@ mod tests {
     }
 }
 
-pub fn exec_source(source: &str) {
+fn exec_source(source: &str) {
+    exec_source_with_jit(source, true);
+}
+
+fn exec_source_with_jit(source: &str, jit: bool) {
     let ops = Op::parse(source);
     if ops.is_empty() {
         eprintln!("no source code provided");
@@ -358,7 +371,7 @@ pub fn exec_source(source: &str) {
     }
     #[cfg(debug_assertions)]
     Op::dump(&ops);
-    Cpu::new(ops).execute();
+    Cpu::new(ops, jit).execute();
     println!();
     println!("Brainfuck program is over.")
 }
@@ -369,9 +382,16 @@ fn main() {
             ">++++++++[<+++++++++>-]<.>++++[<+++++++>-]<+.+++++++..+++.>>++++++[<+++++++>-]<++.------------.>++++++[<+++++++++>-]<+.<.+++.------.--------.>>>++++[<++++++++>-]<+.",
         );
     } else {
+        let mut jit = true;
         for arg in args().skip(1) {
+
+            if arg == "--no-jit" {
+                jit = false;
+                continue;
+            }
+
             let source = fs::read_to_string(PathBuf::from(&arg)).expect("Cannot read file {arg}");
-            exec_source(source.as_str());
+            exec_source_with_jit(source.as_str(), jit);
             println!("Exec done!")
         }
     }
